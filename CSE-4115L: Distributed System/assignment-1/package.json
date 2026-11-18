@@ -1,0 +1,17 @@
+{
+  "name": "food-order-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Two isolated microservices (Restaurant + Order), a React admin console, PostgreSQL and pgAdmin.",
+  "scripts": {
+    "install:all": "npm --prefix services/restaurant install && npm --prefix services/order install && npm --prefix web install",
+    "build:all": "npm --prefix services/restaurant run build && npm --prefix services/order run build && npm --prefix web run build",
+    "test": "npm --prefix services/restaurant test && npm --prefix services/order test",
+    "dev:restaurant": "npm --prefix services/restaurant run dev",
+    "dev:order": "npm --prefix services/order run dev",
+    "dev:web": "npm --prefix web run dev"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

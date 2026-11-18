@@ -1,0 +1,130 @@
+# =============================================================================
+# Food Order Platform - full stack
+# =============================================================================
+#   docker compose up --build
+#
+# A user-defined bridge network (foodapp-net) lets the Order Service reach the
+# Restaurant Service by its service name: http://restaurant-service:8081
+# `localhost` inside the Order container is the Order container itself.
+# =============================================================================
+
+name: foodapp
+
+services:
+  # ---------------------------------------------------------------- database
+  postgres:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    image: foodapp/postgres:1.0.0
+    container_name: foodapp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-foodapp}
+      POSTGRES_USER: ${POSTGRES_USER:-foodapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foodapp}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      # Host port is configurable: 5432 is already taken by the PostgreSQL
+      # installed on the workstation. The container-internal port stays 5432.
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    networks:
+      - foodapp-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-foodapp} -d ${POSTGRES_DB:-foodapp}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ----------------------------------------------------------------- pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: foodapp-pgadmin
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@foodapp.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - foodapp-net
+
+  # ------------------------------------------------------- restaurant service
+  restaurant-service:
+    build:
+      context: ./services/restaurant
+      dockerfile: Dockerfile
+    image: foodapp/restaurant-service:1.0.0
+    container_name: foodapp-restaurant
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "8081"
+      RESTAURANT_PORT: "8081"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgres://${POSTGRES_USER:-foodapp}:${POSTGRES_PASSWORD:-foodapp}@postgres:5432/${POSTGRES_DB:-foodapp}
+    ports:
+      - "8081:8081"
+    networks:
+      - foodapp-net
+
+  # ------------------------------------------------------------- order service
+  order-service:
+    build:
+      context: ./services/order
+      dockerfile: Dockerfile
+    image: foodapp/order-service:1.0.0
+    container_name: foodapp-order
+    restart: unless-stopped
+    depends_on:
+      restaurant-service:
+        condition: service_healthy
+    environment:
+      PORT: "8082"
+      ORDER_PORT: "8082"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # NOT hard-coded in the source: injected here, and overridable in .env.
+      RESTAURANT_URL: ${RESTAURANT_URL:-http://restaurant-service:8081}
+      RESTAURANT_TIMEOUT_MS: ${RESTAURANT_TIMEOUT_MS:-2000}
+    ports:
+      - "8082:8082"
+    networks:
+      - foodapp-net
+
+  # ------------------------------------------------------- react admin console
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: foodapp/web:1.0.0
+    container_name: foodapp-web
+    restart: unless-stopped
+    depends_on:
+      - restaurant-service
+      - order-service
+    environment:
+      # Injected at build time by nginx templating; see web/nginx.conf.
+      RESTAURANT_API_URL: ${RESTAURANT_API_URL:-http://localhost:8081}
+      ORDER_API_URL: ${ORDER_API_URL:-http://localhost:8082}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    networks:
+      - foodapp-net
+
+networks:
+  foodapp-net:
+    name: foodapp-net
+    driver: bridge
+
+volumes:
+  postgres-data:
+  pgadmin-data:
