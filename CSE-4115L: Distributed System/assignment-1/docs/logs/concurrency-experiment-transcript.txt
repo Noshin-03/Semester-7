@@ -1,0 +1,13 @@
+=== Concurrency experiment: 20 concurrent POST http://localhost:8082/orders ===
+
+--- HTTP status codes ---
+     20 201
+
+--- Unique order_ids + state integrity ---
+orders created : 20
+unique ids     : 20
+corrupt orders : 0
+RESULT         : PASS - every order has a unique id and intact state
+
+--- Every created order is retrievable via GET /orders/{id} ---
+RESULT         : PASS - all 20 orders fetched successfully

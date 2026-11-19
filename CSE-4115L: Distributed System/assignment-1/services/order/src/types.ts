@@ -18,12 +18,10 @@ export interface Order {
   created_at: string;
 }
 
-/** Unique order identifier: UUIDv4 prefixed with `ord_` for readability in logs. */
 export function generateOrderId(): string {
   return `ord_${randomUUID()}`;
 }
 
-/** Unique correlation identifier for a single inbound request. */
 export function generateCorrelationId(): string {
   return `cor_${randomUUID()}`;
 }

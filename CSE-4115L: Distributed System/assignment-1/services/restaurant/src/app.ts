@@ -5,11 +5,6 @@ import type { CatalogueSource } from './catalogue';
 
 export const CORRELATION_HEADER = 'x-correlation-id';
 
-/**
- * Middleware that assigns (or propagates) a correlation id for every request.
- * The same id is echoed back in the `x-correlation-id` response header so a
- * client can trace its call across services.
- */
 export function correlationMiddleware(req: Request, res: Response, next: NextFunction): void {
   const incoming = req.header(CORRELATION_HEADER);
   const correlationId = incoming && incoming.trim().length > 0 ? incoming.trim() : generateCorrelationId();
@@ -32,8 +27,8 @@ export function createApp({ catalogue, serviceName = 'restaurant-service' }: App
   process.env.SERVICE_NAME = serviceName;
 
   app.disable('x-powered-by');
-  app.use(express.json({ limit: '256kb' }));
   app.use(correlationMiddleware);
+  app.use(express.json({ limit: '256kb' }));
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     const startedAt = Date.now();
@@ -49,7 +44,6 @@ export function createApp({ catalogue, serviceName = 'restaurant-service' }: App
     next();
   });
 
-  // GET /healthz - liveness + readiness of the service itself.
   app.get('/healthz', (_req: Request, res: Response) => {
     res.json({
       status: 'ok',
@@ -60,7 +54,6 @@ export function createApp({ catalogue, serviceName = 'restaurant-service' }: App
     });
   });
 
-  // GET /restaurants - list of restaurants (summary view).
   app.get('/restaurants', async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const restaurants = await catalogue.listRestaurants();
@@ -73,7 +66,6 @@ export function createApp({ catalogue, serviceName = 'restaurant-service' }: App
     }
   });
 
-  // GET /restaurants/:id - single restaurant including its menu items.
   app.get('/restaurants/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const raw = req.params.id;
@@ -101,7 +93,6 @@ export function createApp({ catalogue, serviceName = 'restaurant-service' }: App
     }
   });
 
-  // GET /restaurants/:id/items - convenience endpoint used by the admin UI.
   app.get('/restaurants/:id/items', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const raw = req.params.id;

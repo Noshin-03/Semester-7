@@ -1,12 +1,3 @@
-/**
- * API layer for the admin console.
- *
- * In Docker the nginx reverse proxy forwards /api/restaurant/* to the
- * Restaurant Service and /api/order/* to the Order Service. During local
- * development (`npm run dev` in web/) the same paths are proxied by Vite to
- * localhost, so the frontend code is identical in both modes.
- */
-
 const RESTAURANT_BASE = '/api/restaurant';
 const ORDER_BASE = '/api/order';
 

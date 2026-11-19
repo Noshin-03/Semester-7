@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-# =============================================================================
-# Concurrency experiment: 20 concurrent POST /orders
-# =============================================================================
-# Expected: 20 unique order_ids, no race, no panic, all orders retrievable.
-#
-# Usage: bash scripts/concurrency-check.sh [order_base_url] [count]
-# =============================================================================
 set -uo pipefail
 
 ORDER_URL="${1:-http://localhost:8082}"
@@ -16,9 +9,6 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 echo "=== Concurrency experiment: $COUNT concurrent POST $ORDER_URL/orders ==="
 echo
 
-# Seeded catalogue: restaurant r owns the menu items r*100+1 .. r*100+3.
-# The third item of each restaurant (r*100+3) is seeded as sold out, so this
-# script deliberately uses the two available items of each restaurant.
 for i in $(seq 1 "$COUNT"); do
   R=$(( (i % 4) + 1 ))
   ITEM=$(( R * 100 + (i % 2) + 1 ))

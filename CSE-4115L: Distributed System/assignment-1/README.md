@@ -131,12 +131,12 @@ contains no hard-coded service URL.
 
 ## Tests
 
-18 automated test cases across the two services, using Node's built-in test
+24 automated test cases across the two services, using Node's built-in test
 runner:
 
 ```bash
 npm --prefix services/restaurant test     #  6 tests
-npm --prefix services/order test          # 12 tests
+npm --prefix services/order test          # 18 tests
 ```
 
 | Suite             | Covers                                                                     |
@@ -194,6 +194,7 @@ to a log aggregator as-is.
 
 ## More documentation
 
+- [`README_DETAILED.md`](README_DETAILED.md) - **full walkthrough**: requirements checklist, how it works, Docker, tests, experiments
 - [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md) - endpoints, payloads, status codes
 - [`docs/PGADMIN_GUIDE.md`](docs/PGADMIN_GUIDE.md) - creating the database and data with pgAdmin
 - [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) - concurrency and outage transcripts

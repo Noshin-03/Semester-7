@@ -13,6 +13,9 @@ All transcripts below were captured on this machine with the stack running via
 
 Raw container logs: [`logs/order-service-sample.log`](logs/order-service-sample.log),
 [`logs/restaurant-service-sample.log`](logs/restaurant-service-sample.log).
+Outage-only log lines: [`logs/outage-experiment.log`](logs/outage-experiment.log); full script
+outputs: [`logs/outage-experiment-transcript.txt`](logs/outage-experiment-transcript.txt),
+[`logs/concurrency-experiment-transcript.txt`](logs/concurrency-experiment-transcript.txt).
 
 ---
 
@@ -90,8 +93,8 @@ bash scripts/outage-check.sh
 === Outage experiment ===
 
 --- Step 1: baseline (both services up) ---
-HTTP 201 in 0.005940s
-{"order_id":"ord_91971221-01ab-4115-bb33-35724d3e5047","status":"CONFIRMED","created_at":"2026-11-12T15:50:52.027Z","correlation_id":"cor_805bcefd-6cf5-4a44-81a9-22a3c464e500","restaurant_id":1,"items":[{"menu_item_id":101,"quantity":1,"unit_price_cents":950,"name":"Margherita"}],"total_cents":950,"currency":"BDT"}
+HTTP 201 in 0.006016s
+{"order_id":"ord_af51de49-d3eb-46a3-83da-c3c311dbf72f","status":"CONFIRMED","created_at":"2026-11-18T12:27:18.300Z","correlation_id":"cor_3d923083-0541-4ad6-aa64-1c01189daddd","restaurant_id":1,"items":[{"menu_item_id":101,"quantity":1,"unit_price_cents":950,"name":"Margherita"}],"total_cents":950,"currency":"BDT"}
 
 --- Step 2: stop the Restaurant Service ---
  Container foodapp-restaurant Stopping
@@ -99,7 +102,7 @@ HTTP 201 in 0.005940s
 restaurant-service stopped
 
 --- Step 3: submit an order while the dependency is down ---
-HTTP 503 in 192ms (curl timeout was 30s)
+HTTP 503 in 354ms (curl timeout was 30s)
 {"error":"service_unavailable","message":"Restaurant Service is unreachable: fetch failed","correlation_id":"cor_outage_demo"}
 
 --- Step 4: restore the Restaurant Service ---
@@ -107,18 +110,34 @@ HTTP 503 in 192ms (curl timeout was 30s)
  Container foodapp-postgres Healthy
  Container foodapp-restaurant Starting
  Container foodapp-restaurant Started
-recovered: HTTP 201 in 0.009561s
+
+--- Step 5: Restaurant HANGS (container paused, TCP accepted but no reply) ---
+ Container foodapp-restaurant Paused
+HTTP 503 in 2014ms (bounded by RESTAURANT_TIMEOUT_MS)
+{"error":"service_unavailable","message":"Restaurant Service did not respond within 2000ms","correlation_id":"cor_hang_demo"}
+ Container foodapp-restaurant Unpaused
+
+--- Step 6: recovery ---
+recovered: HTTP 201 in 0.005850s
+
+--- Order Service log lines for the failed requests ---
+{"ts":"2026-11-18T12:27:18.874Z","level":"error","service":"order-service","message":"restaurant_call_failed","url":"http://restaurant-service:8081/restaurants/1","correlation_id":"cor_outage_demo","reason":"network_error","error":"fetch failed","duration_ms":341}
+{"ts":"2026-11-18T12:27:18.874Z","level":"warn","service":"order-service","message":"order_rejected_dependency","correlation_id":"cor_outage_demo","restaurant_id":1,"reason":"Restaurant Service is unreachable: fetch failed","kind":"unavailable","mapped_status":503}
+{"ts":"2026-11-18T12:27:18.875Z","level":"info","service":"order-service","message":"http_request","method":"POST","path":"/orders","status":503,"duration_ms":343,"correlation_id":"cor_outage_demo"}
+{"ts":"2026-11-18T12:27:27.238Z","level":"error","service":"order-service","message":"restaurant_call_failed","url":"http://restaurant-service:8081/restaurants/1","correlation_id":"cor_hang_demo","reason":"timeout","error":"The operation was aborted due to timeout","duration_ms":2002}
+{"ts":"2026-11-18T12:27:27.238Z","level":"warn","service":"order-service","message":"order_rejected_dependency","correlation_id":"cor_hang_demo","restaurant_id":1,"reason":"Restaurant Service did not respond within 2000ms","kind":"timeout","mapped_status":503}
+{"ts":"2026-11-18T12:27:27.239Z","level":"info","service":"order-service","message":"http_request","method":"POST","path":"/orders","status":503,"duration_ms":2003,"correlation_id":"cor_hang_demo"}
 
 === Outage experiment finished ===
 ```
 
 ### The two failure modes
 
-Both were observed, and both produce a **bounded** failure:
+Both are exercised by the script (step 3 = stopped, step 5 = paused/hanging), and both produce a **bounded** failure:
 
 | Scenario                                    | Detected as      | HTTP | Latency  |
 | ------------------------------------------- | ---------------- | ---- | -------- |
-| Container stopped (DNS resolves, TCP refused) | `network_error`  | 503  | ~190 ms  |
+| Container stopped (DNS resolves, TCP refused) | `network_error`  | 503  | ~150-350 ms  |
 | Service hangs (accepts TCP, never replies)   | `timeout`        | 503  | ~2000 ms (the configured `RESTAURANT_TIMEOUT_MS`) |
 
 An earlier run produced the timeout variant, because Docker's DNS kept
@@ -249,7 +268,8 @@ curl http://localhost:8082/orders/ord_e792fc10-0b79-4179-9d2a-0f298c44efc3
 | Malformed JSON                                   | `{ this is not json`                                        | 400 `Request body is not valid JSON` |
 | Unknown restaurant                               | `restaurant_id: 999`                                       | 404 `Restaurant 999 does not exist` |
 | Unknown menu item                                | `menu_item_id: 99999`                                      | 404 `Menu item 99999 does not exist for restaurant 1` |
-| Unavailable menu item                            | `menu_item_id: 103` (seeded `available = false`)            | 409 `Menu item 103 is currently unavailable` || Unknown order id                                 | `GET /orders/ord_nope`                                      | 404 `Order ord_nope does not exist` |
+| Unavailable menu item                            | `menu_item_id: 103` (seeded `available = false`)            | 409 `Menu item 103 is currently unavailable` |
+| Unknown order id                                 | `GET /orders/ord_nope`                                      | 404 `Order ord_nope does not exist` |
 | Restaurant Service down                          | any valid order                                             | 503 `Restaurant Service is unreachable: fetch failed` |
 
 Example 400:
@@ -280,7 +300,7 @@ Example 404 (downstream 404 is propagated as 404, not masked as 503):
 | Requirement                                                   | Status | Evidence |
 | ------------------------------------------------------------- | ------ | -------- |
 | 20 concurrent POSTs -> 20 unique ids, no race/panic           | PASS   | Experiment 1, `concurrency.test.ts` T13/T14 |
-| Stopping Restaurant -> bounded failure, no hanging            | PASS   | Experiment 2 (503 in 192 ms / 2001 ms), `outage.test.ts` T15-T18 |
+| Stopping Restaurant -> bounded failure, no hanging            | PASS   | Experiment 2 (503 in ~350 ms stopped / ~2000 ms hanging), `outage.test.ts` T15-T18 |
 | Both containers run without a local toolchain, orders retrievable | PASS | Experiment 4 |
 | Cross-service traceability                                    | PASS   | Experiment 3 |
 | 24 automated test cases pass                                  | PASS   | `npm --prefix services/restaurant test` (6) + `npm --prefix services/order test` (18) |

@@ -1,18 +1,3 @@
--- =============================================================================
--- Food Order Platform - PostgreSQL schema
--- =============================================================================
--- Run this from pgAdmin's Query Tool (or psql) to create the schema.
--- It is idempotent: re-running it will not destroy existing data.
---
---   psql "$DATABASE_URL" -f db/schema.sql
---
--- Tables:
---   restaurants  - restaurant catalogue served by the Restaurant Service
---   menu_items   - menu items belonging to a restaurant
---   orders       - order header (A2 will move the Order Service store here)
---   order_items  - order line items
--- =============================================================================
-
 CREATE TABLE IF NOT EXISTS restaurants (
     id          SERIAL PRIMARY KEY,
     name        TEXT        NOT NULL UNIQUE,
@@ -37,9 +22,6 @@ CREATE TABLE IF NOT EXISTS menu_items (
 
 CREATE INDEX IF NOT EXISTS idx_menu_items_restaurant_id ON menu_items (restaurant_id);
 
--- -----------------------------------------------------------------------------
--- Orders (A2 migration target; already created so pgAdmin can inspect them)
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS orders (
     order_id       TEXT        PRIMARY KEY,
     correlation_id TEXT        NOT NULL,

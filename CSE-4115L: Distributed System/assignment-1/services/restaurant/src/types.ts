@@ -2,7 +2,6 @@ import type { MenuItem, Restaurant } from './seed';
 
 export type { MenuItem, Restaurant };
 
-/** Public shape returned by GET /restaurants (list, without nested items). */
 export interface RestaurantSummary {
   id: number;
   name: string;

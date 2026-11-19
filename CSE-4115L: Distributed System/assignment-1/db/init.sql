@@ -1,11 +1,3 @@
--- =============================================================================
--- Food Order Platform - automatic database bootstrap
--- =============================================================================
--- Runs schema.sql + seed.sql against the PostgreSQL container the first time it
--- is created. It is a convenience only: the same two files can be executed by
--- hand from pgAdmin's Query Tool at any time (see README -> pgAdmin section).
--- =============================================================================
-
 CREATE TABLE IF NOT EXISTS restaurants (
     id          SERIAL PRIMARY KEY,
     name        TEXT        NOT NULL UNIQUE,

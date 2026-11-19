@@ -19,11 +19,6 @@ export interface RemoteRestaurant {
   items: RemoteMenuItem[];
 }
 
-/**
- * Result of a downstream lookup. `ok` distinguishes a *successful* lookup
- * from a *failed* one; `kind` tells the caller exactly why it failed so the
- * HTTP layer can map it to the right status code.
- */
 export type LookupResult<T> =
   | { ok: true; value: T }
   | { ok: false; kind: 'not_found' | 'bad_request' | 'unavailable' | 'timeout' | 'invalid_response'; message: string };
@@ -34,14 +29,6 @@ export interface RestaurantClientOptions {
   correlationId?: string;
 }
 
-/**
- * HTTP client for the Restaurant Service.
- *
- * This deliberately uses Node's built-in `fetch` (undici) with an
- * `AbortSignal.timeout` so that every call to the downstream service is
- * bounded: if Restaurant is stopped or slow, the request fails fast with a
- * 503 instead of hanging forever.
- */
 export class RestaurantClient {
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
@@ -59,7 +46,6 @@ export class RestaurantClient {
     return this.timeoutMs;
   }
 
-  /** GET /restaurants/:id on the Restaurant Service. */
   async getRestaurant(restaurantId: number, correlationId: string): Promise<LookupResult<RemoteRestaurant>> {
     const url = `${this.baseUrl}/restaurants/${restaurantId}`;
     const startedAt = Date.now();
@@ -148,7 +134,6 @@ export class RestaurantClient {
     }
   }
 
-  /** Lightweight liveness probe against the Restaurant Service. */
   async health(correlationId: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/healthz`, {

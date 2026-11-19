@@ -5,15 +5,10 @@ import { cloneSeedRestaurants, type MenuItem, type Restaurant } from './seed';
 export interface CatalogueSource {
   listRestaurants(): Promise<Restaurant[]>;
   getRestaurant(id: number): Promise<Restaurant | undefined>;
-  /** "postgres" | "memory" — reported by /healthz so operators can see the active source. */
   readonly source: 'postgres' | 'memory';
   close(): Promise<void>;
 }
 
-/**
- * In-memory catalogue used as a fallback when PostgreSQL is unreachable.
- * Keeps the Restaurant API serving the seed data during a database outage.
- */
 export class MemoryCatalogue implements CatalogueSource {
   readonly source = 'memory' as const;
   private readonly restaurants: Restaurant[];
@@ -32,15 +27,9 @@ export class MemoryCatalogue implements CatalogueSource {
   }
 
   async close(): Promise<void> {
-    /* nothing to release */
   }
 }
 
-/**
- * PostgreSQL-backed catalogue. Reads `restaurants` and `menu_items` tables that
- * are created and seeded by `db/schema.sql` / `db/seed.sql` (also runnable from
- * pgAdmin's Query Tool).
- */
 export class PostgresCatalogue implements CatalogueSource {
   readonly source = 'postgres' as const;
   private readonly pool: Pool;
@@ -118,12 +107,6 @@ export class PostgresCatalogue implements CatalogueSource {
   }
 }
 
-/**
- * Resolves the catalogue implementation at boot.
- * If `DATABASE_URL` is set we try PostgreSQL first and transparently fall back
- * to the in-code seed when the database is down, so a DB outage never takes
- * the Restaurant API offline.
- */
 export async function createCatalogue(): Promise<CatalogueSource> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {

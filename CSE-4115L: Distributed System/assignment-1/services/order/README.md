@@ -64,7 +64,7 @@ PORT=8082 RESTAURANT_URL=http://localhost:8081 node dist/src/index.js
 
 ```bash
 npm run dev        # watch mode (tsx)
-npm test           # 12 automated tests (API, concurrency, outage)
+npm test           # 18 automated tests (API, concurrency, outage)
 npm run typecheck
 ```
 

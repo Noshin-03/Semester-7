@@ -1,9 +1,3 @@
-/**
- * Minimal structured logger with correlation-id aware fields.
- * Mirrors the Restaurant Service logger so both services emit the same JSON
- * envelope shape, which makes cross-service log tracing trivial.
- */
-
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const LEVEL_ORDER: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };

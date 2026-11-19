@@ -10,10 +10,6 @@ const ORDER_PORT = 9098;
 
 const RESTAURANT_URL = `http://127.0.0.1:${RESTAURANT_PORT}`;
 
-/**
- * A stub of the Restaurant Service that mimics the real contract.
- * The Order Service talks to it over real HTTP on a real socket.
- */
 function createRestaurantStub(overrides: { status?: number; body?: unknown; delayMs?: number } = {}) {
   const state = { calls: 0, ...overrides };
   const server = require('node:http').createServer((req: any, res: any) => {
@@ -172,8 +168,9 @@ describe('Order Service API', () => {
       body: '{ this is not json',
     });
     assert.equal(res.status, 400);
-    const body = (await res.json()) as { error: string };
+    const body = (await res.json()) as { error: string; correlation_id?: string };
     assert.equal(body.error, 'bad_request');
+    assert.ok(body.correlation_id, 'malformed-JSON errors must still carry a correlation id');
   });
 
   it('T9: GET /orders/:id returns 404 for an unknown order', async () => {

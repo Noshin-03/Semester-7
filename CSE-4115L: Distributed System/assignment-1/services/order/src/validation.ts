@@ -1,8 +1,3 @@
-/**
- * Request validation for POST /orders.
- * Pure functions - no I/O - so they are trivially unit-testable.
- */
-
 export interface ValidOrderItem {
   menu_item_id: number;
   quantity: number;

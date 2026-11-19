@@ -6,14 +6,6 @@ import { createApp } from '../src/app';
 import { OrderStore } from '../src/orderStore';
 import { RestaurantClient } from '../src/restaurantClient';
 
-/**
- * Downstream-outage tests.
- *
- * Every stub is bound to an ephemeral port (listen(0)) so the tests can never
- * collide with a fixed port, and a dead stub is closed before the next one is
- * started - which is exactly the "stop the Restaurant Service" scenario.
- */
-
 async function listen(handler: http.RequestListener): Promise<{ server: http.Server; port: number }> {
   const server = http.createServer(handler);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
@@ -33,7 +25,6 @@ describe('Order Service - downstream outage handling', () => {
 
   before(async () => {
     store = new OrderStore();
-    // Point the client at a port where nothing listens -> connection refused.
     const deadPort = await listen(() => undefined);
     const deadPortNumber = (deadPort.server.address() as AddressInfo).port;
     await close(deadPort.server);
@@ -73,9 +64,7 @@ describe('Order Service - downstream outage handling', () => {
   });
 
   it('T16: returns 503 within the configured timeout when the Restaurant Service hangs', async () => {
-    // A server that accepts the TCP connection but never answers the request.
     const hanging = await listen(() => {
-      /* deliberately never respond */
     });
     const orderApp = createApp({
       store,

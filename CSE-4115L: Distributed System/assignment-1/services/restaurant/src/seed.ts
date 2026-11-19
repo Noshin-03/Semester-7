@@ -1,13 +1,3 @@
-/**
- * Seed catalogue for the Restaurant Service.
- *
- * This is the canonical A1 dataset (4 restaurants / 12 menu items) and is also
- * mirrored into PostgreSQL by `db/seed.sql` so that pgAdmin shows exactly the
- * same rows. The service prefers PostgreSQL at runtime and falls back to this
- * in-code catalogue when the database is unavailable, so the API never hard-fails
- * because of a database outage.
- */
-
 export interface MenuItem {
   id: number;
   name: string;
@@ -166,7 +156,6 @@ export const SEED_RESTAURANTS: Restaurant[] = [
   },
 ];
 
-/** Deep clone so callers can never mutate the shared seed data. */
 export function cloneSeedRestaurants(): Restaurant[] {
   return SEED_RESTAURANTS.map((r) => ({ ...r, items: r.items.map((i) => ({ ...i })) }));
 }

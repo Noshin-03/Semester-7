@@ -1,17 +1,6 @@
-# =============================================================================
-# Food Order Platform - full stack
-# =============================================================================
-#   docker compose up --build
-#
-# A user-defined bridge network (foodapp-net) lets the Order Service reach the
-# Restaurant Service by its service name: http://restaurant-service:8081
-# `localhost` inside the Order container is the Order container itself.
-# =============================================================================
-
 name: foodapp
 
 services:
-  # ---------------------------------------------------------------- database
   postgres:
     build:
       context: ./db
@@ -26,8 +15,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      # Host port is configurable: 5432 is already taken by the PostgreSQL
-      # installed on the workstation. The container-internal port stays 5432.
       - "${POSTGRES_HOST_PORT:-5433}:5432"
     networks:
       - foodapp-net
@@ -37,7 +24,6 @@ services:
       timeout: 3s
       retries: 10
 
-  # ----------------------------------------------------------------- pgAdmin
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: foodapp-pgadmin
@@ -56,7 +42,6 @@ services:
     networks:
       - foodapp-net
 
-  # ------------------------------------------------------- restaurant service
   restaurant-service:
     build:
       context: ./services/restaurant
@@ -77,7 +62,6 @@ services:
     networks:
       - foodapp-net
 
-  # ------------------------------------------------------------- order service
   order-service:
     build:
       context: ./services/order
@@ -92,7 +76,6 @@ services:
       PORT: "8082"
       ORDER_PORT: "8082"
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      # NOT hard-coded in the source: injected here, and overridable in .env.
       RESTAURANT_URL: ${RESTAURANT_URL:-http://restaurant-service:8081}
       RESTAURANT_TIMEOUT_MS: ${RESTAURANT_TIMEOUT_MS:-2000}
     ports:
@@ -100,7 +83,6 @@ services:
     networks:
       - foodapp-net
 
-  # ------------------------------------------------------- react admin console
   web:
     build:
       context: ./web
@@ -112,7 +94,6 @@ services:
       - restaurant-service
       - order-service
     environment:
-      # Injected at build time by nginx templating; see web/nginx.conf.
       RESTAURANT_API_URL: ${RESTAURANT_API_URL:-http://localhost:8081}
       ORDER_API_URL: ${ORDER_API_URL:-http://localhost:8082}
     ports:

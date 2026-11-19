@@ -18,9 +18,7 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
   process.env.SERVICE_NAME = serviceName;
 
   app.disable('x-powered-by');
-  app.use(express.json({ limit: '256kb' }));
 
-  // Correlation id: propagate the inbound one or mint a fresh one.
   app.use((req: Request, res: Response, next: NextFunction) => {
     const incoming = req.header(CORRELATION_HEADER);
     const correlationId = incoming && incoming.trim().length > 0 ? incoming.trim() : generateCorrelationId();
@@ -28,6 +26,8 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     res.setHeader(CORRELATION_HEADER, correlationId);
     next();
   });
+
+  app.use(express.json({ limit: '256kb' }));
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     const startedAt = Date.now();
@@ -43,7 +43,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     next();
   });
 
-  // JSON body parser error -> 400 instead of the default HTML 400.
   app.use((err: Error & { type?: string }, _req: Request, res: Response, next: NextFunction) => {
     if (err?.type === 'entity.parse.failed') {
       res.status(400).json({
@@ -56,7 +55,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     next(err);
   });
 
-  // GET /healthz - liveness of the Order Service itself.
   app.get('/healthz', (_req: Request, res: Response) => {
     res.json({
       status: 'ok',
@@ -68,7 +66,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     });
   });
 
-  // GET /orders - convenience endpoint used by the admin UI (not part of the strict A1 contract).
   app.get('/orders', async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const orders = await store.list();
@@ -78,11 +75,9 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     }
   });
 
-  // POST /orders - create an order.
   app.post('/orders', async (req: Request, res: Response, next: NextFunction) => {
     const correlationId: string = res.locals.correlationId;
 
-    // 1) Shape validation -> 400
     const validation = validateOrderRequest(req.body);
     if (!validation.valid) {
       logger.warn('order_rejected_validation', {
@@ -101,7 +96,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
 
     const { restaurant_id: restaurantId, items: requestedItems } = validation.value;
 
-    // 2) Downstream validation against the Restaurant Service (real HTTP call).
     const lookup = await restaurantClient.getRestaurant(restaurantId, correlationId);
 
     if (!lookup.ok) {
@@ -124,7 +118,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     const restaurant = lookup.value;
     const menuById = new Map(restaurant.items.map((item) => [item.id, item]));
 
-    // 3) Every menu item must exist and be orderable -> 404
     const unknownItem = requestedItems.find((item) => !menuById.has(item.menu_item_id));
     if (unknownItem) {
       logger.warn('order_rejected_unknown_item', {
@@ -155,7 +148,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
       return;
     }
 
-    // 4) Build and persist the order (mutex-protected store).
     const orderItems = requestedItems.map((item) => {
       const menuItem = menuById.get(item.menu_item_id)!;
       return {
@@ -200,7 +192,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
     });
   });
 
-  // GET /orders/:id - fetch a single order.
   app.get('/orders/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const order = await store.get(req.params.id);
@@ -238,13 +229,6 @@ export function createApp({ store, restaurantClient, serviceName = 'order-servic
   return app;
 }
 
-/**
- * Maps a downstream failure to the HTTP status the Order Service should return.
- *  - restaurant missing       -> 404
- *  - downstream 4xx          -> 400
- *  - downstream down / 5xx    -> 503
- *  - timeout / bad payload    -> 503
- */
 export function mapLookupFailureToStatus(kind: string): number {
   switch (kind) {
     case 'not_found':

@@ -1,0 +1,30 @@
+{"ts":"2026-11-18T12:27:00.471Z","level":"info","service":"unknown","message":"catalogue source = postgres"}
+{"ts":"2026-11-18T12:27:00.478Z","level":"info","service":"restaurant-service","message":"restaurant_service_started","port":8081,"host":"0.0.0.0","catalogue_source":"postgres"}
+{"ts":"2026-11-18T12:27:05.209Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/healthz","status":200,"duration_ms":5,"correlation_id":"cor_mwm3izcj_9bj1vfw5"}
+{"ts":"2026-11-18T12:27:15.411Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/healthz","status":200,"duration_ms":1,"correlation_id":"cor_mwm3j782_tj2xhhix"}
+{"ts":"2026-11-18T12:27:17.992Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/4","status":200,"duration_ms":5,"correlation_id":"cor_conc_007"}
+{"ts":"2026-11-18T12:27:17.997Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":4,"correlation_id":"cor_conc_012"}
+{"ts":"2026-11-18T12:27:18.009Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/2","status":200,"duration_ms":3,"correlation_id":"cor_conc_009"}
+{"ts":"2026-11-18T12:27:18.012Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/3","status":200,"duration_ms":21,"correlation_id":"cor_conc_006"}
+{"ts":"2026-11-18T12:27:18.013Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/3","status":200,"duration_ms":24,"correlation_id":"cor_conc_002"}
+{"ts":"2026-11-18T12:27:18.016Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":2,"correlation_id":"cor_conc_004"}
+{"ts":"2026-11-18T12:27:18.019Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/4","status":200,"duration_ms":25,"correlation_id":"cor_conc_003"}
+{"ts":"2026-11-18T12:27:18.020Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":5,"correlation_id":"cor_conc_008"}
+{"ts":"2026-11-18T12:27:18.023Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/3","status":200,"duration_ms":2,"correlation_id":"cor_conc_010"}
+{"ts":"2026-11-18T12:27:18.025Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/4","status":200,"duration_ms":4,"correlation_id":"cor_conc_011"}
+{"ts":"2026-11-18T12:27:18.030Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/2","status":200,"duration_ms":2,"correlation_id":"cor_conc_013"}
+{"ts":"2026-11-18T12:27:18.038Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/2","status":200,"duration_ms":3,"correlation_id":"cor_conc_005"}
+{"ts":"2026-11-18T12:27:18.041Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/2","status":200,"duration_ms":2,"correlation_id":"cor_conc_001"}
+{"ts":"2026-11-18T12:27:18.045Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":1,"correlation_id":"cor_conc_016"}
+{"ts":"2026-11-18T12:27:18.051Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/4","status":200,"duration_ms":3,"correlation_id":"cor_conc_015"}
+{"ts":"2026-11-18T12:27:18.054Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/3","status":200,"duration_ms":1,"correlation_id":"cor_conc_014"}
+{"ts":"2026-11-18T12:27:18.059Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/2","status":200,"duration_ms":2,"correlation_id":"cor_conc_017"}
+{"ts":"2026-11-18T12:27:18.061Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":2,"correlation_id":"cor_conc_020"}
+{"ts":"2026-11-18T12:27:18.064Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/4","status":200,"duration_ms":2,"correlation_id":"cor_conc_019"}
+{"ts":"2026-11-18T12:27:18.067Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/3","status":200,"duration_ms":2,"correlation_id":"cor_conc_018"}
+{"ts":"2026-11-18T12:27:18.299Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":2,"correlation_id":"cor_3d923083-0541-4ad6-aa64-1c01189daddd"}
+{"ts":"2026-11-18T12:27:18.395Z","level":"info","service":"restaurant-service","message":"shutdown_signal","signal":"SIGTERM"}
+{"ts":"2026-11-18T12:27:19.295Z","level":"info","service":"unknown","message":"catalogue source = postgres"}
+{"ts":"2026-11-18T12:27:19.301Z","level":"info","service":"restaurant-service","message":"restaurant_service_started","port":8081,"host":"0.0.0.0","catalogue_source":"postgres"}
+{"ts":"2026-11-18T12:27:24.097Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/healthz","status":200,"duration_ms":5,"correlation_id":"cor_mwm3jdx8_phq27t0t"}
+{"ts":"2026-11-18T12:27:27.360Z","level":"info","service":"restaurant-service","message":"http_request","method":"GET","path":"/restaurants/1","status":200,"duration_ms":3,"correlation_id":"cor_1f738bab-6008-4ecb-acf9-2228dc180152"}

@@ -1,7 +1,3 @@
-# Order Service - A1
-# Multi-stage build: compile TypeScript in the builder, ship only production
-# dependencies in the runtime image.
-
 FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -17,18 +13,13 @@ FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Only production dependencies are copied into the final image.
 COPY package*.json ./
 RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder /app/dist/src ./dist/src
 
-# Run as an unprivileged user.
 USER node
 
-# RESTAURANT_URL is NOT hard-coded: it is supplied by the environment
-# (docker-compose sets it to http://restaurant-service:8081 on the shared
-# user-defined network).
 ENV PORT=8082 \
     ORDER_PORT=8082 \
     HOST=0.0.0.0 \

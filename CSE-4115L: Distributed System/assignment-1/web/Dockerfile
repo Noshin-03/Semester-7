@@ -1,5 +1,4 @@
 # syntax=docker/dockerfile:1
-# React admin console - static build served by nginx.
 FROM node:20-alpine AS builder
 WORKDIR /app
 

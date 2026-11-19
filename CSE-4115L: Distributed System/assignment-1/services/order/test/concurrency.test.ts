@@ -77,7 +77,6 @@ describe('Order Service - concurrency', () => {
     const ids = new Set(bodies.map((b) => b.order_id));
     assert.equal(ids.size, CONCURRENCY, `expected ${CONCURRENCY} unique order ids, got ${ids.size}`);
 
-    // The store must contain exactly those orders, each fully intact.
     const stored = await store.list();
     assert.equal(stored.length, CONCURRENCY);
     for (const order of stored) {

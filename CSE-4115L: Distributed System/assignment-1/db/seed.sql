@@ -1,13 +1,3 @@
--- =============================================================================
--- Food Order Platform - seed catalogue
--- =============================================================================
--- Run this AFTER db/schema.sql (pgAdmin -> Query Tool -> paste -> Execute).
--- The catalogue is identical to the in-code seed used by the Restaurant Service
--- (services/restaurant/src/seed.ts), so pgAdmin and the API always agree.
---
--- Idempotent: re-running updates the existing rows instead of duplicating them.
--- =============================================================================
-
 INSERT INTO restaurants (id, name, cuisine, address, rating, image_url)
 VALUES
   (1, 'Bella Pizza Napoli',  'Italian',      '12 Harbour Road, Dhaka',    4.6, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?w=800'),
@@ -43,7 +33,5 @@ ON CONFLICT (id) DO UPDATE SET
   description   = EXCLUDED.description,
   available     = EXCLUDED.available;
 
--- Reset the sequences so that future inserts (without an explicit id) do not
--- collide with the seeded ids.
 SELECT setval(pg_get_serial_sequence('restaurants', 'id'), (SELECT MAX(id) FROM restaurants));
 SELECT setval(pg_get_serial_sequence('menu_items', 'id'), (SELECT MAX(id) FROM menu_items));

@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// In local development the Vite dev server proxies /api/* to the two services
-// running on the host, mirroring what nginx does inside Docker.
 export default defineConfig({
   plugins: [react()],
   server: {

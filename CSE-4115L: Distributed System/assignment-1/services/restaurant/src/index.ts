@@ -22,7 +22,6 @@ async function main(): Promise<void> {
     server.close(() => {
       void catalogue.close().finally(() => process.exit(0));
     });
-    // Hard stop if connections hang.
     setTimeout(() => process.exit(0), 5000).unref();
   };
 

@@ -7,9 +7,6 @@ const PORT = Number(process.env.PORT ?? process.env.ORDER_PORT ?? 8082);
 const HOST = process.env.HOST ?? '0.0.0.0';
 const TIMEOUT_MS = Number(process.env.RESTAURANT_TIMEOUT_MS ?? 2000);
 
-// RESTAURANT_URL is injected by the environment (docker-compose / .env / CI).
-// It must NEVER be hard-coded: inside Docker the Restaurant Service is reachable
-// by its service name, not by localhost.
 const RESTAURANT_URL = process.env.RESTAURANT_URL ?? 'http://localhost:8081';
 
 async function main(): Promise<void> {
