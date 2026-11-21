@@ -32,6 +32,20 @@ def summarize(values: list[float]) -> dict:
     }
 
 
+def field_errors(rows: list[dict], answer_key: dict, method: str, run: int) -> list[dict]:
+    errors = []
+    for r in rows:
+        if r["method"] != method or r["run"] != run:
+            continue
+        expected = answer_key[r["id"]]
+        parsed = r["parsed"] or {}
+        for f in ("domain", "expires_on"):
+            if parsed.get(f) != expected.get(f):
+                errors.append({"id": r["id"], "field": f,
+                               "got": parsed.get(f), "expected": expected.get(f)})
+    return errors
+
+
 def main() -> None:
     rows = load_rows(ROOT / "runs" / "raw_results.jsonl")
     answer_key = json.loads((ROOT / "data" / "answer_key.json").read_text(encoding="utf-8"))
@@ -70,6 +84,16 @@ def main() -> None:
                       f"spread {stats['field_accuracy']['per_run']}")
         lines.append(f"- Cost (USD): total {stats['total_cost_usd']}, "
                       f"per-run {stats['cost_usd']['per_run']}")
+        lines.append("")
+
+    lines.append("## Field-level errors (run 1, by method)")
+    lines.append("")
+    scored_fields = len(answer_key) * 2  # domain + expires_on per notice
+    for method in methods:
+        errors = field_errors(rows, answer_key, method, runs[0])
+        lines.append(f"### {method} ({len(errors)} field errors out of {scored_fields})")
+        for e in errors:
+            lines.append(f"- `{e['id']}` **{e['field']}**: got `{e['got']!r}`, expected `{e['expected']!r}`")
         lines.append("")
     (ROOT / "runs" / "report.md").write_text("\n".join(lines), encoding="utf-8")
 

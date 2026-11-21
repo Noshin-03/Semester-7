@@ -5,6 +5,15 @@ expiry notices into a versioned JSON schema, comparing prompt-only parsing
 against schema-constrained decoding, 3 runs each, priced through the Class 1
 ledger.
 
+The corpus is a hand-written set of 50 realistic domain-registration emails
+(mixed registrars, mixed languages, ambiguous date formats, and several
+distractor dates -- invoice due dates, suspension dates, SSL cert expiry --
+that are not the domain's own expiry). An earlier, synthetic, one-sentence
+corpus (still buildable via `generate_corpus.py`) produced a 100%-valid,
+100%-accurate, zero-difference result for both methods on every run --
+that corpus turned out to be too easy to differentiate anything. This real
+corpus gets a genuine, non-trivial error rate instead.
+
 ## Requirements
 
 - Python 3.10+
@@ -33,12 +42,18 @@ python3 score.py
   fields (additive changes stay compatible), strict on the required fields'
   types (renames/retypes break it). Exercised by
   `tests/test_schema_contract.py`.
-- `generate_corpus.py`: builds the 50 synthetic domain-expiry notices and
-  their answer key from a fixed seed (`SEED = 42`). Because the corpus is
-  synthetic, the generation parameters *are* the hand-checked ground truth --
-  no separate manual pass is needed.
-- `data/notices.json`, `data/answer_key.json`: the corpus and its answer key
-  (reused as the corpus for Classes 3-6).
+- `generate_corpus.py`: an earlier, synthetic corpus generator (fixed seed
+  `42`) kept for reference -- superseded by the hand-written corpus below,
+  which exposes real extraction errors instead of a trivial 100%.
+- `data/notices.json`: the 50 hand-written domain notices (reused as the
+  corpus for Classes 3-6).
+- `data/answer_key.json`: the correct `domain`/`expires_on` for each notice,
+  written by hand before any model call.
+- `data/answer_key_notes.md`: the judgment calls behind every non-obvious
+  answer-key entry (ambiguous date formats, distractor dates, subdomain vs.
+  registered domain, incomplete dates) -- written for the same reason the
+  course asks for honest failure analysis: so a grader (or future you) can
+  see the reasoning, not just the verdict.
 - `agentlab/lm.py`: the Class 1 wrapper (pulled out of
   `Token-Cost-master/ollama_client.py`) -- the Ollama client, cost/token
   accounting, and the `Ledger` that records tokens, cost and validity per
@@ -48,7 +63,8 @@ python3 score.py
   all 50 notices, 3 runs each. Same model, temperature, seed and token limit
   for both methods. Writes `runs/raw_results.jsonl` and `runs/ledger.csv`.
 - `score.py`: computes invalid rate and field accuracy per run, then mean and
-  min-max spread across the 3 runs, plus total/per-run cost per method.
+  min-max spread across the 3 runs, plus total/per-run cost per method, and a
+  field-level error breakdown (which notice, which field, got vs. expected).
   Writes `runs/report.json` and `runs/report.md`.
 - `tests/test_ledger.py`: tests for the ledger and cost accounting (fake
   backend, no Ollama required).
@@ -72,3 +88,31 @@ python3 score.py
   this project (no corpus/model dependency there).
 - Prices are the course's notional rates ($0.15/M input, $0.60/M output),
   same as Assignment 2's ledger.
+
+## Result on the real corpus (qwen2.5:3b)
+
+Both methods: 0% invalid rate, 92.67% field accuracy, identical cost, on
+every one of the 3 runs -- and, checked directly, byte-identical raw output
+on all 150 matched notice/run pairs between methods.
+
+That tie is itself the finding: `qwen2.5:3b` at temperature 0 never once
+produced malformed JSON under prompt-only instructions, so there was nothing
+for grammar-constrained decoding to fix. Constrained decoding only masks
+tokens that would break the JSON *shape* -- it has no influence over which
+*values* the model picks. All 11 errors (out of 150 scored fields) were
+content/semantic mistakes, not structural ones:
+
+- 7 clear, explicitly-labelled expiry dates were skipped entirely (returned
+  `null`) on notices that also contained a distractor date (an invoice due
+  date, a suspension date, a price-change date) -- the model appears to have
+  over-generalized the "ignore distractor dates" instruction and suppressed
+  the real one too.
+- 1 date had its day and month swapped (`n02`).
+- 1 notice kept a subdomain instead of the registered domain, and invented a
+  year-only date into a full one, violating the "never invent a date" rule
+  (`n49` -- the single hardest case in the corpus).
+
+So: grammar-constrained decoding is a validity guarantee, not an accuracy
+guarantee. On a well-aligned small model that already follows JSON
+instructions reliably, it buys nothing extra; its value would only show up
+against a model (or a prompt) that frequently breaks the output *shape*.

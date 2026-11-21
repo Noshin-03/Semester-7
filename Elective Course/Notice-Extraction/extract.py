@@ -19,16 +19,25 @@ SCHEMA = json.loads((ROOT / "data" / "schema_v1.json").read_text(encoding="utf-8
 NOTICES = json.loads((ROOT / "data" / "notices.json").read_text(encoding="utf-8"))
 
 SYSTEM_PROMPT = (
-    "You extract structured data from a single domain-expiry notice. "
+    "You extract structured data from a single domain registration notice. "
     "Respond with JSON only, no extra text."
 )
 
 PROMPT_ONLY_INSTRUCTIONS = (
     "Extract fields from this notice and return a JSON object with exactly "
-    'these keys: "schema_version" (the string "1.0"), "domain" (the one '
-    'domain name mentioned), and "expires_on" (the expiry date as '
-    '"YYYY-MM-DD", or null if the notice gives no expiry date -- never '
-    "invent a date).\n\nNotice: {text}"
+    'these keys: "schema_version" (the string "1.0"), "domain" (the domain '
+    "name the notice is about -- lowercase, without a leading \"www.\"), "
+    'and "expires_on" (the date YOUR domain itself expires or is registered '
+    'until, as "YYYY-MM-DD").\n\n'
+    "Rules for expires_on:\n"
+    "- Use only the domain's own expiry/registration-until date, never an "
+    "invoice due date, a suspension date, a price-change effective date, or "
+    "an SSL/certificate expiry date mentioned in the same notice.\n"
+    "- If the notice gives no such date, or gives only a partial date (for "
+    "example just a year), return null. Never invent or guess a date.\n"
+    "- If renewal happened and both an old and a new expiry date are given, "
+    "use the new (current) one.\n\n"
+    "Notice: {text}"
 )
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
