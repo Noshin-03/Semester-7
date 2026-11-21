@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "domain_notice_extraction",
+  "description": "schema_version 1: one domain per notice, extracted from free-text domain-expiry notices.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+      "description": "Exactly one domain name per notice."
+    },
+    "expires_on": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "ISO date YYYY-MM-DD. null when the notice gives no expiry date. Never invent a date."
+    }
+  },
+  "required": ["schema_version", "domain", "expires_on"],
+  "additionalProperties": false
+}
