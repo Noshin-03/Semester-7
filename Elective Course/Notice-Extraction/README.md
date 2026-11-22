@@ -115,6 +115,32 @@ content/semantic mistakes, not structural ones:
   year-only date into a full one, violating the "never invent a date" rule
   (`n49` -- the single hardest case in the corpus).
 
+### Proof the tie isn't a bug
+
+A tie on every metric is a suspicious result at first glance, so it's worth
+confirming `format=SCHEMA` is actually constraining anything rather than
+being silently ignored. `diagnostic_weak_prompt.py` reruns a handful of
+notices with a deliberately weak, JSON-less prompt ("Tell me about the
+domain and expiry date in this message: ..."). Under that prompt:
+
+```
+==== n01 ====
+PROMPT-ONLY : 'The message you provided contains information about a domain
+name and its expiration date. Here's a breakdown of the key details:...'
+CONSTRAINED : '{ "schema_version": "1.0", "domain": "rahmantraders.com",
+"expires_on": "2027-01-14T00:00:00Z" }'
+```
+
+Prompt-only answers in free prose with no JSON at all; grammar-constrained
+still forces a schema-shaped object. So the constraint mechanism is real --
+the main experiment's tie happens because the *actual* prompt in
+`extract.py` already explicitly says "respond with JSON only" and spells
+out every field, which `qwen2.5:3b` complies with fully even unconstrained.
+The two methods only diverge once the prompt is weak enough to let the
+model wander -- which is itself a useful, reportable finding: constrained
+decoding is a safety net for a weak or careless prompt, not an improvement
+on top of an already-strict one.
+
 So: grammar-constrained decoding is a validity guarantee, not an accuracy
 guarantee. On a well-aligned small model that already follows JSON
 instructions reliably, it buys nothing extra; its value would only show up
