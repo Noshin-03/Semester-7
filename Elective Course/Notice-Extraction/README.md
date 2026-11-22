@@ -91,15 +91,18 @@ python3 score.py
 
 ## Result on the real corpus (qwen2.5:3b)
 
-Both methods: 0% invalid rate, 92.67% field accuracy, identical cost, on
-every one of the 3 runs -- and, checked directly, byte-identical raw output
-on all 150 matched notice/run pairs between methods.
+See `runs/report.md` for the full metric table. Both methods: 0% invalid
+rate, 89.0% field accuracy (scored on `domain` and `expires_on` --
+`schema_version` is excluded since it's a constant, trivially-correct
+field), identical cost, on every one of the 3 runs -- and, checked
+directly, byte-identical raw output on all 150 matched notice/run pairs
+between methods.
 
 That tie is itself the finding: `qwen2.5:3b` at temperature 0 never once
 produced malformed JSON under prompt-only instructions, so there was nothing
 for grammar-constrained decoding to fix. Constrained decoding only masks
 tokens that would break the JSON *shape* -- it has no influence over which
-*values* the model picks. All 11 errors (out of 150 scored fields) were
+*values* the model picks. All 11 errors (out of 100 scored fields) were
 content/semantic mistakes, not structural ones:
 
 - 7 clear, explicitly-labelled expiry dates were skipped entirely (returned

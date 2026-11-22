@@ -1,68 +1,72 @@
 {
-  "grammar_constrained": {
-    "invalid_rate": {
-      "mean": 0.0,
-      "min": 0.0,
-      "max": 0.0,
-      "per_run": [
-        0.0,
-        0.0,
-        0.0
-      ]
-    },
-    "field_accuracy": {
-      "mean": 0.9267,
-      "min": 0.9267,
-      "max": 0.9267,
-      "per_run": [
-        0.9267,
-        0.9267,
-        0.9267
-      ]
-    },
-    "cost_usd": {
-      "mean": 0.003,
-      "min": 0.003,
-      "max": 0.003,
-      "per_run": [
-        0.003,
-        0.003,
-        0.003
-      ]
-    },
-    "total_cost_usd": 0.009026
-  },
   "prompt_only": {
-    "invalid_rate": {
-      "mean": 0.0,
-      "min": 0.0,
-      "max": 0.0,
-      "per_run": [
-        0.0,
-        0.0,
-        0.0
-      ]
-    },
-    "field_accuracy": {
-      "mean": 0.9267,
-      "min": 0.9267,
-      "max": 0.9267,
-      "per_run": [
-        0.9267,
-        0.9267,
-        0.9267
-      ]
-    },
-    "cost_usd": {
-      "mean": 0.003,
-      "min": 0.003,
-      "max": 0.003,
-      "per_run": [
-        0.003,
-        0.003,
-        0.003
-      ]
-    },
-    "total_cost_usd": 0.009026
+    "invalid_rate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "field_accuracy": [
+      0.89,
+      0.89,
+      0.89
+    ],
+    "field_accuracy_valid_only": [
+      0.89,
+      0.89,
+      0.89
+    ],
+    "cost_usd_per_run": [
+      0.00300855,
+      0.00300855,
+      0.00300855
+    ],
+    "total_cost_usd": 0.009026,
+    "seconds_per_run": [
+      459.1800939219993,
+      472.17607088600744,
+      777.3021385219981
+    ],
+    "refusals": 0,
+    "truncated": 0,
+    "fenced": 0,
+    "field_hits": {
+      "domain": 0.98,
+      "expires_on": 0.8
+    }
+  },
+  "grammar_constrained": {
+    "invalid_rate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "field_accuracy": [
+      0.89,
+      0.89,
+      0.89
+    ],
+    "field_accuracy_valid_only": [
+      0.89,
+      0.89,
+      0.89
+    ],
+    "cost_usd_per_run": [
+      0.00300855,
+      0.00300855,
+      0.00300855
+    ],
+    "total_cost_usd": 0.009026,
+    "seconds_per_run": [
+      464.335843042998,
+      733.0605314120057,
+      781.5335385479975
+    ],
+    "refusals": 0,
+    "truncated": 0,
+    "fenced": 0,
+    "field_hits": {
+      "domain": 0.98,
+      "expires_on": 0.8
+    }
   }
 }
